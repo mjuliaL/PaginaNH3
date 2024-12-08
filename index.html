@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de NH3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            transition: background-color 0.5s ease;
+        }
+        h1 {
+            color: #333;
+        }
+        #valor-ppm {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monitoramento de Concentração de NH3</h1>
+    <div id="valor-ppm">Valor de NH3: Aguardando...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/mqtt.min.js"></script>
+    <script>
+        // Configuração do cliente MQTT
+        var client = new Paho.MQTT.Client('broker.hivemq.com', 8000, 'clientId');
+
+        // Função para quando a conexão for bem-sucedida
+        client.connect({
+            onSuccess: function() {
+                console.log("Conectado ao broker MQTT");
+                client.subscribe("nh3/sensor");  // Inscrever-se no tópico MQTT
+            }
+        });
+
+        // Função para processar a chegada das mensagens MQTT
+        client.onMessageArrived = function(message) {
+            var ppm = parseFloat(message.payloadString); // Extrair valor de ppm
+            document.getElementById('valor-ppm').innerText = 'Valor de NH3: ' + ppm.toFixed(2) + ' ppm';
+
+            // Mudança de cor da tela dependendo do valor de NH3
+            if (ppm > 700) {
+                document.body.style.backgroundColor = 'red';
+            } else {
+                document.body.style.backgroundColor = 'white';
+            }
+        };
+    </script>
+</body>
+</html>
